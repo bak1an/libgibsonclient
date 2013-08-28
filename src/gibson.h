@@ -122,6 +122,7 @@ typedef struct
 {
 	uint32_t  count;
 	char    **keys;
+    uint32_t *key_lengths;
 	gbBuffer *values;
 }
 gbMultiBuffer;

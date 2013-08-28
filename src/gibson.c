@@ -553,11 +553,13 @@ void gb_reply_multi(gbClient *c, gbMultiBuffer *b){
 	b->count  = 0;
 	b->keys   = (char **)NULL;
 	b->values = NULL;
+    b->key_lengths = NULL;
     
     if( c->reply.buffer != NULL ){
         b->count  = *(uint32_t *)memrev32ifbe(p); p += sizeof(uint32_t);
         b->keys   = (char **)malloc( b->count * sizeof(char *) );
         b->values = (gbBuffer *)malloc( b->count * sizeof(gbBuffer) );
+        b->key_lengths = (uint32_t *)malloc(b->count * sizeof(uint32_t));
 
         for( i = 0; i < b->count; i++ ){
             GB_INIT_BUFFER( b->values[i] );
@@ -565,6 +567,7 @@ void gb_reply_multi(gbClient *c, gbMultiBuffer *b){
             v = &b->values[i];
 
             klen = *(uint32_t *)memrev32ifbe(p); p += sizeof(uint32_t);
+            b->key_lengths[i] = klen;
 
             b->keys[i] = (char *)calloc( 1, klen + 1 );
 
@@ -597,15 +600,14 @@ void gb_reply_multi_free(gbMultiBuffer *b){
 		b->keys[i] = NULL;
 	}
 
-    if( b->values != NULL )
-	    free( b->values );
-	
-    if( b->keys != NULL )
-        free( b->keys );
+    free( b->values );
+    free( b->keys );
+    free( b->key_lengths );
 
 	b->values = NULL;
 	b->keys   = (char **)NULL;
 	b->count  = 0;
+    b->key_lengths = NULL;
 }
 
 void gb_disconnect( gbClient *c ){
